@@ -1,4 +1,5 @@
 ﻿#Pester Script
+#. ($PSCommandPath -replace '\.tests\.ps1$', '.ps1')
 
 Describe 'Enable-IISRemoteManagement' {
      context 'Input' {
@@ -18,7 +19,7 @@ Describe 'Enable-IISRemoteManagement' {
         }
     
         mock 'Test-WindowsFeature' {
-            $false
+            $true
         }
     
         mock 'Set-RemoteRegistryValue'
@@ -31,22 +32,26 @@ Describe 'Enable-IISRemoteManagement' {
             New-MockObject -Type 'System.ServiceProcess.ServiceController'
         }
         
-        it 'When the web-Mgmt-Service feature is installed, it changes the EnabledRemoteManagement reg value to 1' {
+        it 'when the Web-Mgmt-Service feature is already installed, it attempts to change the EnableRemoteManagement reg value to 1' {
+
             $null = Enable-IISRemoteManagement -ComputerName 'SOMETHING'
 
-            $assertMockParameters =  @{
+            $assMParams = @{
                 CommandName = 'Set-RemoteRegistryValue'
                 Times = 1
-                Exactly = $True
-                ParameterFilter = { $ComputerName -eq 'SOMETHING'}
+                Scope = 'It'
+                Exactly = $true
+                ParameterFilter = { $ComputerName -eq 'SOMETHING' }
             }
-            Assert-MockCalled @assertMockParameters
+            Assert-MockCalled @assMParams
         }
+
         it 'When the web-Mgmt-Service feature is installed, it changes the WMSvc services starup type to Automatic' {
             $null = Enable-IISRemoteManagement -ComputerName 'SOMETHING'
             $assertMockParameters =  @{
                 CommandName = 'Set-Service'
                 Times = 1
+                Scope = 'It'
                 Exactly = $True
                 ParameterFilter = { $ComputerName -eq 'SOMETHING'}
             }
@@ -57,6 +62,7 @@ Describe 'Enable-IISRemoteManagement' {
             $assertMockParameters =  @{
                 CommandName = 'Get-Service'
                 Times = 1
+                Scope = 'It'
                 Exactly = $True
             }
             Assert-MockCalled @assertMockParameters -ParameterFilter {$ComputerName -eq 'SOMETHING'}

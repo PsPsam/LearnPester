@@ -20,6 +20,22 @@
     }
 }
 
+#function Test-WindowsFeature {
+#    param(
+#        $ComputerName,
+#        $Name
+#    )
+#    if ($feature = Get-WindowsFeature -ComputerName $ComputerName -Name $Name -ErrorAction Ignore) {
+#        if ($feature.Installed) {
+#            $true
+#        } else {
+#            $false
+#        }
+#    } else {
+#        $false
+#    }
+#}
+
 Function Set-RemoteRegistryValue {
     Params (
         $ComputerName,
