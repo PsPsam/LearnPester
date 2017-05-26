@@ -77,20 +77,40 @@ Describe "Remove-files" {
   }
 }
 
-Describe "Remove-EmptyFolders" { 
-  Context "path has empty folders" {
-    Setup -Dir "env\empty"
+Describe "Remove-EmptyFolders" {
+  Setup -Dir "env\empty\full"
+  Setup -Dir "env\empty\diff"
+  Setup -Dir "env\empty\log"
+  Setup -Dir "env\notempty\full"
+  Setup -Dir "env\notempty\diff"
+  Setup -Dir "env\notempty\log"
+  Setup -file "env\notempty\full\file.bak"
+  Setup -file "env\notempty\diff\file.bak"  
+  Setup -file "env\notempty\log\file.bak"
+  Setup -Dir "env\half\full"
+  Setup -Dir "env\half\diff"
+  Setup -Dir "env\half\log"
+  Setup -file "env\half\full\file.bak"    
+  
+  Context "path has empty folders and non empty folders" {
+    Remove-EmptyFolder -path "TestDrive:\env"
     It "removes the folder" {
-      Remove-EmptyFolder -path "TestDrive:\env"
-      Test-Path "TestDrive:\empty" | Should Be $false
+      Test-Path "TestDrive:\env\empty" | Should Be $false
     }
-  }
-  Context "path does not have empty folders" {
-    Setup -Dir "env\notempty"
-    Setup -file "env\notempty\file.txt" 
-    It "does not removes the folder" {
-      Remove-EmptyFolder -path "TestDrive:notempty"
-      Test-Path "TestDrive:\env" | Should Be $true
+    It "does not removes the folder notempty" {
+      Test-Path "TestDrive:\env\notempty" | Should Be $true
+    }
+    It "does not removes the folder half" {
+      Test-Path "TestDrive:\env\half" | Should Be $true
+    }
+    It "does not removes the folder half\full" {
+      Test-Path "TestDrive:\env\half\full" | Should Be $true
+    }
+    It "removes the folder half\diff" {
+      Test-Path "TestDrive:\env\half\diff" | Should Be $false
+    }
+    It "removes the folder half\log" {
+      Test-Path "TestDrive:\env\half\log" | Should Be $false
     }
   }
 }
