@@ -65,17 +65,17 @@
 function Remove-EmptyFolder {
   <#
     .SYNOPSIS
-    Describe purpose of "Remove-EmptyFolder" in 1-2 sentences.
+    Removes folders that are empty
 
     .DESCRIPTION
-    Add a more complete description of what the function does.
+    Removes folders that are empty
 
     .PARAMETER path
-    Describe parameter -path.
+    Base path to start looking for empty folders
 
     .EXAMPLE
     Remove-EmptyFolder -path Value
-    Describe what this call does
+    Removes empty folders from the path given.
 
     .NOTES
     Place additional notes here.
@@ -126,20 +126,24 @@ function Remove-OldFile {
     The function will check the given path for files that are older then the given number of days.
 
     .DESCRIPTION
-    Add a more complete description of what the function does.
+    The function will check the given path for files that are older then the given number of days.
 
     .PARAMETER path
-    Describe parameter -path.
+    Sets the base path to start the search for old files and empty folders
 
     .PARAMETER olderThan
-    Describe parameter -olderThan.
+    How old in days the files should be to be removed.
 
     .PARAMETER empyfolder
-    Describe parameter -empyfolder.
+    If it should remove empty folders or not.
 
     .EXAMPLE
-    Remove-OldFiles -path Value -olderThan Value -empyfolder Value
-    Describe what this call does
+    Remove-OldFiles -path d:\test -olderThan 7 
+    Will remove files from d:\test that are older then seven days, will not remove empty folders
+
+    .EXAMPLE
+    Remove-OldFiles -path d:\test -olderThan 7 -empyfolder $true
+    Will remove files from d:\test that are older then seven days, will remove empty folders
 
     .NOTES
     Place additional notes here.
