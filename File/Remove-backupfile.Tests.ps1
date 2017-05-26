@@ -17,12 +17,28 @@ Describe "Remove-files" {
     Setup -Dir "env\server\Log"
     Setup -File "env\server\old.txt"
     Setup -File "env\server\full\old.bak"
+    Setup -File "env\server\full\new.bak"
     Setup -File "env\server\diff\old.bak"
+    Setup -File "env\server\diff\new.bak"
     Setup -File "env\server\log\old.bak"
+    Setup -File "env\server\log\new.bak"
     # change the file creation date
     $oldFile = Get-Item "TestDrive:\env\server\old.txt"
     $oldFile.CreationTime = (Get-Date).AddDays(-3)
+    $oldFile = Get-Item "TestDrive:\env\server\full\old.bak"
+    $oldFile.CreationTime = (Get-Date).AddDays(-3)
+    $oldFile = Get-Item "TestDrive:\env\server\diff\old.bak"
+    $oldFile.CreationTime = (Get-Date).AddDays(-3)
+    $oldFile = Get-Item "TestDrive:\env\server\log\old.bak"
+    $oldFile.CreationTime = (Get-Date).AddDays(-3)
+    it "should be seven files in server folder" {
+      (get-childitem 'testdrive:\env\server' -Recurse -File).count | should be 7
+    }
+
     Setup -File "env\server1\new.txt"
+    it "should be one files in server1 folder" {
+      (get-childitem 'testdrive:\env\server1' -Recurse -File).count | should be 1
+    }
 
     It "new file exists" {
       Test-Path "TestDrive:\env\server1\new.txt" | Should Be $true
@@ -34,10 +50,18 @@ Describe "Remove-files" {
       Remove-file -path "TestDrive:env" -date (Get-Date).AddDays(-2)
       Test-Path "TestDrive:\env\server\old.txt" | Should Be $false
     }
- 
     It "leaves the new files" {
       Remove-file -path "TestDrive:env" -date (Get-Date).AddDays(-2)
       Test-Path "TestDrive:\env\server1\new.txt" | Should Be $true
+    }
+    it "should be three files in server folder after removing old files" {
+      (get-childitem 'testdrive:\env\server' -Recurse -File).count | should be 3
+    }
+    it "should be one files in server1 folder after removing old files" {
+      (get-childitem 'testdrive:\env\server1' -Recurse -File).count | should be 1
+    }
+    it "should be four files in env folder after removing old files" {
+      (get-childitem 'testdrive:\env' -Recurse -File).count | should be 4
     }
   }
  

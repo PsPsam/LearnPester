@@ -123,7 +123,7 @@ function Remove-EmptyFolder {
 function Remove-OldFile {
   <#
     .SYNOPSIS
-    Describe purpose of "Remove-OldFiles" in 1-2 sentences.
+    The function will check the given path for files that are older then the given number of days.
 
     .DESCRIPTION
     Add a more complete description of what the function does.
