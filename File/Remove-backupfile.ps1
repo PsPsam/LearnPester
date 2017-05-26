@@ -1,20 +1,20 @@
 ﻿function Remove-File {
   <#
     .SYNOPSIS
-    Describe purpose of "Remove-File" in 1-2 sentences.
+    Removes files based on the given path and given date
 
     .DESCRIPTION
-    Add a more complete description of what the function does.
+    The function will remove files from the given path that are older then the given date
 
     .PARAMETER path
-    Describe parameter -path.
+    The path to remove old files from
 
     .PARAMETER date
-    Describe parameter -date.
+    Files older the date will be removed
 
     .EXAMPLE
     Remove-File -path Value -date Value
-    Describe what this call does
+    Will remove the file that has an older date the given
 
     .NOTES
     Place additional notes here.
