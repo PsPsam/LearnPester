@@ -142,7 +142,7 @@ Describe "Remove-OldFiles" {
   Context "Execution" {
     #    $result = {Remove-OldFile -path 'TestDrive:\folder' -olderThan 3}
 
-    It "should get a date time" {
+    It "should get a date time one time" {
       setup -Dir "env"
       $null = Remove-OldFile -Path 'TestDrive:\env' -olderThan 3
       
@@ -154,7 +154,7 @@ Describe "Remove-OldFiles" {
       }
       Assert-MockCalled @assMParams
     }
-    It "Should call Remove-File" {
+    It "Should call Remove-File one time" {
       $null = Remove-OldFile -Path 'TestDrive:\env' -olderThan 3
       
       $assMParams = @{
@@ -170,7 +170,7 @@ Describe "Remove-OldFiles" {
       Assert-MockCalled @assMParams
     }
    
-    It "Should call Remove-EmptyFolder when empyfolder is true" {
+    It "when empyfolder is true - Should call Remove-EmptyFolder one time " {
       $null = Remove-OldFile -Path 'TestDrive:\env' -olderThan 3 -emptyfolder $true
       $assMParams = @{
         CommandName     = 'Remove-EmptyFolder'
