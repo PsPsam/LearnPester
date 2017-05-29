@@ -1,4 +1,7 @@
-﻿function Remove-File {
+﻿# This script contains three functions. The main function is Remove-Oldfile but you can call the other two directly also.
+# To run this a schedual task edit the last line to suite your need.
+
+function Remove-File {
   <#
     .SYNOPSIS
     Removes files based on the given path and given date
@@ -35,13 +38,13 @@
   Param
   (
     # Path to the folder to check for old files
-    [Parameter(Mandatory, HelpMessage = 'Add help message for user',
+    [Parameter(Mandatory,
       ValueFromPipelineByPropertyName,
       Position = 0)]
     [string]$path,
 
-    # Older than days to delete
-    [Parameter(Mandatory, HelpMessage = 'Add help message for user',
+    # Age in days of file to delete
+    [Parameter(Mandatory,
       ValueFromPipelineByPropertyName,
       Position = 1)]
     [datetime]$date
@@ -123,7 +126,7 @@ function Remove-EmptyFolder {
 function Remove-OldFile {
   <#
     .SYNOPSIS
-    The function will check the given path for files that are older then the given number of days.
+    The function will check the singel given path for files that are older then the given number of days.
 
     .DESCRIPTION
     The function will check the given path for files that are older then the given number of days.
@@ -135,7 +138,7 @@ function Remove-OldFile {
     How old in days the files should be to be removed.
 
     .PARAMETER empyfolder
-    If it should remove empty folders or not.
+    If it should remove empty folders or not.'
 
     .EXAMPLE
     Remove-OldFiles -path d:\test -olderThan 7 
@@ -161,31 +164,34 @@ function Remove-OldFile {
 
 
   [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
-  Param
-  (
+  param(
     # Path to the folder to check for old files
-    [Parameter(Mandatory, HelpMessage = 'Path to folder to check for old files',
+    [Parameter(Mandatory,
       ValueFromPipelineByPropertyName,
       Position = 0)]
-    [ValidateScript( {Test-Path -Path $_})]
+    [ValidateScript( {
+        if (-not (Test-Path -LiteralPath $_)) {
+          throw "Path '${_}' does not exist. Please provide the path to a file or folder on your local computer and try again."
+        }
+        $true
+      })]
     [string]$path,
 
     # Older than days to delete
-    [Parameter(Mandatory, HelpMessage = 'Age of the files to remove in days',
+    [Parameter(Mandatory,
       ValueFromPipelineByPropertyName,
       Position = 1)]
-    [int]$olderThan,
+    [int]$Age,
 
     # remove empty folders
     [Parameter(ValueFromPipelineByPropertyName,
       Position = 2)]
-    [Validateset($true, $false)]
-    [bool]$emptyfolder = $false
+    # [Validateset($True, $False)]
+    $emptyfolder = $False
   )
 
   Begin {
-    #$checkdate = get-date
-    $checkdate = (get-date).AddDays( - $olderThan)
+    $checkdate = (get-date).AddDays( - $age)
   }
   Process {
     # Call the function to remove files
@@ -201,3 +207,5 @@ function Remove-OldFile {
     Write-Output -InputObject 'Done'
   }
 }
+
+#remove-file -path x:\path -age 70 -emptyfolder $true
