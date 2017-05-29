@@ -1,4 +1,16 @@
-﻿#Dot source the ps1 file
+﻿# To run this pester test you need to install the latest pester version from Powershell Gallery. 
+# Start powershell as admin. 
+# If you havent installed Pester from the PSGallery do so by
+# install-module Pester -force -verbose
+# If you have it installed you can update to the lastest version by 
+# Update-module Pester -Verbose
+
+# To run the test
+# invoke-pester -path .\remove-backupfile.test.ps1
+# To run the test and see that you covered all the code
+# invoke-pester -Path .\Remove-backupfile.Tests.ps1 -CodeCoverage .\Remove-backupfile.ps1
+
+#Dot source the ps1 file
 . .\Remove-backupfile.ps1
 
 Describe "Check with Scriptanalyser" {
@@ -131,20 +143,20 @@ Describe "Remove-OldFiles" {
 
   Context "Input" {
     It -name "When path doesn't exists, it will throw an exception" -test {
-      {Remove-OldFile -path 'TestDrive:\wrongfolder' -olderThan 3} | Should throw
+      {Remove-OldFile -path 'TestDrive:\wrongfolder' -Age 3} | Should throw
     }
     
     It "given folder should exist" {
-      {Remove-OldFile -path 'TestDrive:\env\folder' -olderThan 3} | Should be $true
+      {Remove-OldFile -path 'TestDrive:\env\folder' -Age 3} | Should be $true
     }
   }
   
   Context "Execution" {
-    #    $result = {Remove-OldFile -path 'TestDrive:\folder' -olderThan 3}
+    #    $result = {Remove-OldFile -path 'TestDrive:\folder' -Age 3}
 
     It "should get a date time one time" {
       setup -Dir "env"
-      $null = Remove-OldFile -Path 'TestDrive:\env' -olderThan 3
+      $null = Remove-OldFile -Path 'TestDrive:\env' -Age 3
       
       $assMParams = @{
         CommandName = 'Get-Date'
@@ -155,7 +167,7 @@ Describe "Remove-OldFiles" {
       Assert-MockCalled @assMParams
     }
     It "Should call Remove-File one time" {
-      $null = Remove-OldFile -Path 'TestDrive:\env' -olderThan 3
+      $null = Remove-OldFile -Path 'TestDrive:\env' -Age 3
       
       $assMParams = @{
         CommandName     = 'Remove-File'
@@ -168,10 +180,25 @@ Describe "Remove-OldFiles" {
         }
       }
       Assert-MockCalled @assMParams
+    }  
+
+    It 'should call remove-emptyfolder zero times when -emptyfolder is $false or not defined' {
+      $null = Remove-OldFile -Path 'TestDrive:\env' -Age 3
+      
+      $assMParams = @{
+        CommandName     = 'Remove-EmptyFolder'
+        Times           = 0
+        Exactly         = $true
+        Scope           = 'It'
+        ParameterFilter = {
+          $path -eq 'TestDrive:\env'
+        }
+      }
+      Assert-MockCalled @assMParams
     }
-   
+      
     It "when empyfolder is true - Should call Remove-EmptyFolder one time " {
-      $null = Remove-OldFile -Path 'TestDrive:\env' -olderThan 3 -emptyfolder $true
+      $null = Remove-OldFile -Path 'TestDrive:\env' -Age 3 -emptyfolder $true
       $assMParams = @{
         CommandName     = 'Remove-EmptyFolder'
         Times           = 1
