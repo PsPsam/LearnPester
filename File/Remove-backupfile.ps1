@@ -34,7 +34,7 @@ function Remove-File {
   #>
 
 
-  [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
+  [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
   Param
   (
     # Path to the folder to check for old files
@@ -54,12 +54,11 @@ function Remove-File {
   }
   Process {
     # Delete files older than the $limit.
-    Write-Verbose -Message "Starting to check the given path $path for old files"
-    Get-ChildItem -Path $path -Recurse -Force |
-      Where-Object -FilterScript {
-      !$_.PSIsContainer -and $_.CreationTime -lt $date 
-    } |
-      Remove-Item -Force
+    Write-Verbose -Message ('Starting to check the given path {0} for old files' -f $path)
+    $files = Get-ChildItem -Path $path -Recurse -Force -File |
+      Where-Object -FilterScript {$_.CreationTime -lt $date}
+    $files | Remove-Item -Force
+    return $files
   }
   End {
   }
@@ -95,7 +94,7 @@ function Remove-EmptyFolder {
   #>
 
 
-  [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
+  [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
   Param
   (
     # Path to the folder to check for old files
@@ -109,17 +108,22 @@ function Remove-EmptyFolder {
   }
 
   Process {
+
     # Delete files older than the $limit.
-    Write-Verbose -Message "Starting to check the given path $path for empty folders"
+    Write-Verbose -Message ('Starting to check the given path {0} for empty folders' -f $path)
     # Delete any empty directories left behind after deleting the old files.
-    Get-ChildItem -Path $path -Recurse -Force |
-      Where-Object {
-      $_.PSIsContainer -and $null -eq (Get-ChildItem -Path $_.FullName -Recurse -Force |
-          Where-Object {-not $_.PSIsContainer})
-    } |
-      Remove-Item -Force -Recurse
+    $removed = $null
+    do {
+      $test = Get-ChildItem -Path $path -Recurse -Directory -Force | 
+        Where-Object {$null -eq (Get-ChildItem -Path $_.FullName -Recurse -Force)}
+      $test | Remove-Item -Force -Recurse
+      $removed += $test
+    } while ($test.count -ne 0)
+    return $removed
+    #Get-ChildItem -Path $path -Recurse -Force -Directory | Where-Object {$null -eq (Get-ChildItem -Path $_.FullName -File -Recurse -Force)} | Remove-Item -Force -Recurse
   }
   End {
+    
   }
 }
 
@@ -163,7 +167,7 @@ function Remove-OldFile {
   #>
 
 
-  [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = "High")]
+  [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
   param(
     # Path to the folder to check for old files
     [Parameter(Mandatory,
@@ -171,7 +175,7 @@ function Remove-OldFile {
       Position = 0)]
     [ValidateScript( {
         if (-not (Test-Path -LiteralPath $_)) {
-          throw "Path '${_}' does not exist. Please provide the path to a file or folder on your local computer and try again."
+          throw ("Path '{0}' does not exist. Please provide the path to a file or folder on your local computer and try again." -f ${_})
         }
         $true
       })]
@@ -192,15 +196,29 @@ function Remove-OldFile {
 
   Begin {
     $checkdate = (get-date).AddDays( - $age)
+    
   }
   Process {
     # Call the function to remove files
-    Remove-File -path $path -date $checkdate
-    Write-Output -InputObject 'Remove old files done'
+    write-eventlog -logname Application -source SQLBackup -eventID 0 -entrytype Information -message "Remove of old files on $path starting!"
+    $files = Remove-File -path $path -date $checkdate
+    $output = "Remove old files done `n$files"
+    $count = $files.count
+    write-eventlog -logname Application -source SQLBackup -eventID 1 -entrytype Information -message "Remove of old files on $path done!"
+    if ($count -gt 0) {
+        write-eventlog -logname Application -source SQLBackup -eventID 1 -entrytype Information -message "Removed $count files `n $output"
+    }
+    #Write-Output -InputObject $output
     # Call the function to remove empty folders if $emptyfolder -eq $true
     if ($emptyfolder) {
-      Remove-EmptyFolder -path $path
-      Write-Output -InputObject 'Removed empty folders done'
+      write-eventlog -logname Application -source SQLBackup -eventID 2 -entrytype Information -message "Remove of empty folders on $path starting!"
+      $folders = Remove-EmptyFolder -path $path
+      $count = $folders.count
+      $output = "Removed empty folders done, removed folders `n $folders"
+      write-eventlog -logname Application -source SQLBackup -eventID 3 -entrytype Information -message "Remove of empty folders on $path done!"
+      if ($count -gt 0) {
+        write-eventlog -logname Application -source SQLBackup -eventID 3 -entrytype Information -message "Removed $count folders `n $output"
+      }
     }
   }
   End {
@@ -208,4 +226,6 @@ function Remove-OldFile {
   }
 }
 
-#remove-file -path x:\path -age 70 -emptyfolder $true
+Remove-OldFile -path \\sodra.com\sql-backup\test -age 35 -emptyfolder $true
+Remove-OldFile -path \\sodra.com\sql-backup\acceptans -age 35 -emptyfolder $true
+Remove-OldFile -path \\sodra.com\sql-backup\produktion -age 65 -emptyfolder $true

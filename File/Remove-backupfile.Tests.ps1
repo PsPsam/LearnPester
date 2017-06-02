@@ -90,22 +90,24 @@ Describe "Remove-files" {
 }
 
 Describe "Remove-EmptyFolders" {
-  Setup -Dir "env\empty\full"
-  Setup -Dir "env\empty\diff"
-  Setup -Dir "env\empty\log"
-  Setup -Dir "env\notempty\full"
-  Setup -Dir "env\notempty\diff"
-  Setup -Dir "env\notempty\log"
-  Setup -file "env\notempty\full\file.bak"
-  Setup -file "env\notempty\diff\file.bak"  
-  Setup -file "env\notempty\log\file.bak"
-  Setup -Dir "env\half\full"
-  Setup -Dir "env\half\diff"
-  Setup -Dir "env\half\log"
-  Setup -file "env\half\full\file.bak"    
-  
+ 
   Context "path has empty folders and non empty folders" {
+    Setup -Dir "env\empty\full"
+    Setup -Dir "env\empty\diff"
+    Setup -Dir "env\empty\log"
+    Setup -Dir "env\notempty\full"
+    Setup -Dir "env\notempty\diff"
+    Setup -Dir "env\notempty\log"
+    Setup -file "env\notempty\full\file.bak"
+    Setup -file "env\notempty\diff\file.bak"  
+    Setup -file "env\notempty\log\file.bak"
+    Setup -Dir "env\half\full"
+    Setup -Dir "env\half\diff"
+    Setup -Dir "env\half\log"
+    Setup -file "env\half\full\file.bak" 
+    
     Remove-EmptyFolder -path "TestDrive:\env"
+    
     It "removes the folder" {
       Test-Path "TestDrive:\env\empty" | Should Be $false
     }
@@ -139,6 +141,7 @@ Describe "Remove-OldFiles" {
   mock Get-Date { $today }
   mock Remove-File {}
   mock Remove-EmptyFolder {}
+  mock write-eventlog {}
 
 
   Context "Input" {
@@ -197,7 +200,7 @@ Describe "Remove-OldFiles" {
       Assert-MockCalled @assMParams
     }
       
-    It "when empyfolder is true - Should call Remove-EmptyFolder one time " {
+    It "when empyfolder is true - Should call Remove-EmptyFolder one time" {
       $null = Remove-OldFile -Path 'TestDrive:\env' -Age 3 -emptyfolder $true
       $assMParams = @{
         CommandName     = 'Remove-EmptyFolder'
